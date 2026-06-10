@@ -106,15 +106,25 @@ Fue desarrollado por la **Agencia de Protección Ambiental de los Estados Unidos
 El AQI se calcula mediante **interpolación lineal** dentro del rango que corresponde a la concentración medida. La fórmula es:
 
 ```
-AQI = [(AQI_alto - AQI_bajo) / (C_alto - C_bajo)] × (C - C_bajo) + AQI_bajo
+AQI = [(AQI_alto - AQI_bajo) / (C_alto - C_bajo)] × (C_norm - C_bajo) + AQI_bajo
 ```
 
 Donde:
-- **C** = concentración medida del contaminante
+- **C_norm** = concentración normalizada según la precisión que exige la EPA para cada contaminante (ver tabla abajo)
 - **C_bajo** = concentración mínima del rango (breakpoint inferior)
 - **C_alto** = concentración máxima del rango (breakpoint superior)
 - **AQI_bajo** = AQI mínimo del rango
 - **AQI_alto** = AQI máximo del rango
+
+### Precisión Requerida por Contaminante
+
+La EPA define las tablas de breakpoints con distinta precisión según el contaminante. Aplicar la concentración cruda (de sensor) sin normalizar produce huecos entre rangos donde el cálculo falla.
+
+| Contaminante | Precisión EPA | Normalización aplicada | Ejemplo |
+|---|---|---|---|
+| PM2.5 | 1 decimal (µg/m³) | Redondeo a 1 decimal | 12.05 → 12.1 |
+| PM10 | Entero (µg/m³) | Truncado (floor) | 54.87 → 54 |
+| NO₂ | Entero (ppb) | Truncado (floor) | 100.6 → 100 |
 
 ### Ejemplo Paso a Paso
 

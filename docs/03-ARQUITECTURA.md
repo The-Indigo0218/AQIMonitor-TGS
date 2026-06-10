@@ -65,12 +65,20 @@ Clase estática que almacena los 6 breakpoints de cada uno de los 3 contaminante
 
 ### `AqiCalculator`
 
-Clase de utilidad estática que implementa la fórmula EPA:
+Clase de utilidad estática que implementa la fórmula EPA. Antes de buscar el breakpoint y aplicar la interpolación, normaliza la concentración a la precisión que exige la EPA para cada contaminante:
 
 ```java
-// Fórmula de interpolación lineal
-double aqi = ((iHigh - iLow) / (cHigh - cLow)) * (concentration - cLow) + iLow;
+// Normalización de precisión por contaminante (EPA)
+double c = switch (pollutant) {
+    case PM25 -> Math.round(concentration * 10.0) / 10.0; // 1 decimal
+    case PM10, NO2 -> Math.floor(concentration);           // entero
+};
+
+// Fórmula de interpolación lineal sobre el valor normalizado
+double aqi = ((iHigh - iLow) / (cHigh - cLow)) * (c - cLow) + iLow;
 ```
+
+Sin esta normalización, valores flotantes del sensor como `54.867 µg/m³` (PM10) caen en el hueco entre los rangos enteros `[0, 54]` y `[55, 154]`, lanzando una excepción en tiempo de ejecución.
 
 Tres métodos públicos:
 | Método | Descripción |

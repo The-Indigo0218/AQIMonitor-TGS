@@ -72,6 +72,8 @@ Igual estructura que PM2.5 pero con 18 casos para PM10 (en µg/m³).
 | `testOverallAqiReturnsMax` | Con PM2.5=100, PM10=100, NO₂=150 → AQI global = 150 |
 | `testEmptyConcentrations` | Mapa vacío → AQI = 0 (sin crashear) |
 
+> **Nota sobre precisión y la normalización:** Los tests de PM10 y NO₂ usan valores enteros y los de PM2.5 usan valores de 1 decimal, que coinciden exactamente con los extremos de los breakpoints. En la simulación real, los sensores generan flotantes de doble precisión (ej. `54.867 µg/m³` para PM10) que pueden caer en el hueco entre rangos enteros consecutivos. Esto causaba un `IllegalArgumentException` en tiempo de ejecución. `AqiCalculator.calculateAqi` normaliza la concentración antes de la búsqueda (floor para PM10/NO₂, redondeo a 1 decimal para PM2.5), siguiendo la precisión que especifica la EPA para cada contaminante.
+
 ### Grupo `CategoryTests` — Clasificación por Categorías
 
 18 casos que verifican que un AQI numérico se mapea a la categoría correcta. Incluye todos los umbrales:
