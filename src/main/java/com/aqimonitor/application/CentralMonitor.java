@@ -3,14 +3,18 @@ package com.aqimonitor.application;
 import com.aqimonitor.domain.AlertEvent;
 import com.aqimonitor.domain.SensorReading;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public final class CentralMonitor implements ReadingCollector {
     private final AlertNotifier alertNotifier;
     private final Map<String, SensorReading> latestReadings = new ConcurrentHashMap<>();
     private final Consumer<String> logConsumer;
+    private final AtomicInteger totalReadings = new AtomicInteger(0);
+    private final AtomicInteger totalAlerts = new AtomicInteger(0);
 
     public CentralMonitor(AlertNotifier alertNotifier, Consumer<String> logConsumer) {
         this.alertNotifier = alertNotifier;
@@ -20,9 +24,11 @@ public final class CentralMonitor implements ReadingCollector {
     @Override
     public void collect(SensorReading reading) {
         latestReadings.put(reading.stationId(), reading);
+        totalReadings.incrementAndGet();
         logConsumer.accept(formatReading(reading));
 
         if (reading.getCategory().requiresUrgentMitigation()) {
+            totalAlerts.incrementAndGet();
             AlertEvent alert = AlertEvent.createUrgentAlert(reading.stationId(), reading);
             alertNotifier.notify(alert);
         }
@@ -30,6 +36,18 @@ public final class CentralMonitor implements ReadingCollector {
 
     public SensorReading getLatestReading(String stationId) {
         return latestReadings.get(stationId);
+    }
+
+    public Map<String, SensorReading> getAllLatestReadings() {
+        return Collections.unmodifiableMap(latestReadings);
+    }
+
+    public int getTotalReadings() {
+        return totalReadings.get();
+    }
+
+    public int getTotalAlerts() {
+        return totalAlerts.get();
     }
 
     public int getGlobalAqi() {
