@@ -11,14 +11,21 @@ public final class AqiCalculator {
             throw new IllegalArgumentException("Concentration cannot be negative: " + concentration);
         }
 
-        Breakpoint bp = BreakpointTable.findBreakpoint(pollutant, concentration);
+        // EPA specifies PM2.5 at 1 decimal place, PM10 and NO2 as truncated integers.
+        // Raw sensor floats must be normalized before breakpoint lookup to avoid gaps.
+        double c = switch (pollutant) {
+            case PM25 -> Math.round(concentration * 10.0) / 10.0;
+            case PM10, NO2 -> Math.floor(concentration);
+        };
+
+        Breakpoint bp = BreakpointTable.findBreakpoint(pollutant, c);
 
         double cLow = bp.concentrationLow();
         double cHigh = bp.concentrationHigh();
         int iLow = bp.aqiLow();
         int iHigh = bp.aqiHigh();
 
-        double aqi = ((double) (iHigh - iLow) / (cHigh - cLow)) * (concentration - cLow) + iLow;
+        double aqi = ((double) (iHigh - iLow) / (cHigh - cLow)) * (c - cLow) + iLow;
         return (int) Math.round(aqi);
     }
 
