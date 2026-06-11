@@ -145,10 +145,19 @@ El `CentralMonitor` no sabe cómo se formatean las alertas ni adónde van. Solo 
 El núcleo de la aplicación. Cuando recibe una lectura:
 
 1. La almacena en un `ConcurrentHashMap<String, SensorReading>` (thread-safe porque llegan de múltiples hilos).
-2. La formatea y delega al `logConsumer` para imprimirla.
-3. Si la categoría requiere mitigación urgente, crea un `AlertEvent` y llama al `alertNotifier`.
+2. Incrementa los contadores de lecturas totales y, si aplica, de alertas emitidas.
+3. La formatea y delega al `logConsumer` para imprimirla.
+4. Si la categoría requiere mitigación urgente, crea un `AlertEvent` y llama al `alertNotifier`.
 
-También expone `getGlobalAqi()` y `getGlobalCategory()` que calculan el peor caso entre todas las estaciones conocidas.
+Métodos de consulta disponibles para el resumen final:
+
+| Método | Descripción |
+|---|---|
+| `getGlobalAqi()` | Peor AQI entre todas las estaciones |
+| `getGlobalCategory()` | Categoría correspondiente al AQI global |
+| `getAllLatestReadings()` | Mapa estación → última lectura (vista no modificable) |
+| `getTotalReadings()` | Total acumulado de lecturas procesadas |
+| `getTotalAlerts()` | Total de alertas urgentes emitidas durante la sesión |
 
 ### `AlertService` (implementa `AlertNotifier`)
 

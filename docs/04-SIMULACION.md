@@ -104,11 +104,44 @@ Las alertas aparecen en `stderr` (la salida de error del proceso), que en la may
 ### Resumen final (al presionar Ctrl+C)
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║                      RESUMEN FINAL                           ║
-╚══════════════════════════════════════════════════════════════╝
-AQI Global: 98 (Moderada)
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║                              RESUMEN FINAL DE SIMULACIÓN                        ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+  Duración real    : 18 segundos
+  Tiempo simulado  : ~18 horas  (escala 1 s = 1 h)
+  Lecturas totales : 90  (18 por estación)
+  Alertas emitidas : 3  (AQI > 150 en alguna estación)
+
+  Estado final por estación:
+  ──────────────────────────────────────────────────────────────────────────────────
+  Estación             │  AQI │ Categoría                       │ Contaminante dominante
+  ──────────────────────────────────────────────────────────────────────────────────
+  EST-001-CENTRO       │   47 │ Buena                           │ PM10: 28.1 µg/m³
+  EST-002-NORTE        │   83 │ Moderada                        │ NO₂: 77.4 ppb
+  EST-003-SUR          │  112 │ Dañina para grupos sensibles    │ PM2.5: 40.1 µg/m³
+  EST-004-ESTE         │   35 │ Buena                           │ PM10: 18.2 µg/m³
+  EST-005-OESTE        │   65 │ Moderada                        │ NO₂: 58.3 ppb
+  ──────────────────────────────────────────────────────────────────────────────────
+  AQI GLOBAL (ciudad)  │  112 │ Dañina para grupos sensibles    │
+  ──────────────────────────────────────────────────────────────────────────────────
+
+  Personas con enfermedades respiratorias/cardiacas, niños y ancianos deben
+  limitar esfuerzos prolongados al aire libre.
 ```
+
+Los campos del resumen:
+
+| Campo | Descripción |
+|---|---|
+| Duración real | Segundos reales que estuvo corriendo la simulación |
+| Tiempo simulado | Horas equivalentes (1 s = 1 h) |
+| Lecturas totales | Total de mediciones procesadas entre todas las estaciones |
+| Alertas emitidas | Cuántas veces alguna estación superó AQI 150 durante la sesión |
+| AQI por estación | Último valor calculado para cada estación al momento del cierre |
+| Contaminante dominante | El contaminante que produjo el AQI más alto en esa estación |
+| AQI GLOBAL | El peor AQI registrado entre todas las estaciones |
+| Descripción final | Texto de impacto en salud correspondiente a la categoría global |
 
 ---
 
