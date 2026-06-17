@@ -22,7 +22,7 @@ public final class Main {
         System.out.println("║     SISTEMA DE MONITOREO Y ALERTA DE CALIDAD DEL AIRE        ║");
         System.out.println("║                    Teoría General de Sistemas                ║");
         System.out.println("╚══════════════════════════════════════════════════════════════╝");
-        System.out.println("  5 estaciones activas  |  escala: 1 segundo = 1 hora simulada");
+        System.out.println("  3 zonas monitoreadas  |  escala: 1 segundo = 1 hora simulada");
         System.out.println("  Presiona Ctrl+C para detener y ver el resumen final.");
         System.out.println();
 
@@ -34,11 +34,9 @@ public final class Main {
         ReadingCollector collector = centralMonitor;
 
         List<SensorStation> stations = List.of(
-            new SensorStation("EST-001-CENTRO", collector),
-            new SensorStation("EST-002-NORTE", collector),
-            new SensorStation("EST-003-SUR", collector),
-            new SensorStation("EST-004-ESTE", collector),
-            new SensorStation("EST-005-OESTE", collector)
+            new SensorStation("EST-001-INDUSTRIAL", ZoneProfile.INDUSTRIAL, collector),
+            new SensorStation("EST-002-RESIDENCIAL", ZoneProfile.RESIDENCIAL, collector),
+            new SensorStation("EST-003-AUTOPISTA", ZoneProfile.AUTOPISTA, collector)
         );
 
         Instant startTime = Instant.now();
@@ -57,14 +55,15 @@ public final class Main {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                printSummary(centralMonitor, startTime);
+                printSummary(centralMonitor, stations, startTime);
             }));
 
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         }
     }
 
-    private static void printSummary(CentralMonitor monitor, Instant startTime) {
+    private static void printSummary(CentralMonitor monitor, List<SensorStation> stations,
+                                     Instant startTime) {
         long elapsedSeconds = Duration.between(startTime, Instant.now()).toSeconds();
         int globalAqi = monitor.getGlobalAqi();
         String sep = "─".repeat(82);
@@ -88,8 +87,8 @@ public final class Main {
         System.out.println("  " + sep);
 
         Map<String, SensorReading> readings = monitor.getAllLatestReadings();
-        List.of("EST-001-CENTRO", "EST-002-NORTE", "EST-003-SUR",
-                "EST-004-ESTE", "EST-005-OESTE").forEach(id -> {
+        stations.forEach(station -> {
+            String id = station.getStationId();
             SensorReading r = readings.get(id);
             if (r == null) {
                 System.out.printf("  %-20s │  --- │ %-31s │ %s%n", id, "(sin datos)", "");

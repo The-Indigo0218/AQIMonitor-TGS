@@ -72,9 +72,9 @@ Cuando corres la simulación verás dos tipos de mensajes:
 ### Lecturas normales (salida estándar — negro/blanco)
 
 ```
-[14:32:01] Station: EST-001-CENTRO | AQI: 47 (Buena) | PM2.5: 9.3 µg/m³ | PM10: 28.1 µg/m³ | NO₂: 41.2 ppb
-[14:32:01] Station: EST-002-NORTE  | AQI: 83 (Moderada) | PM2.5: 22.7 µg/m³ | PM10: 91.4 µg/m³ | NO₂: 38.5 ppb
-[14:32:01] Station: EST-003-SUR    | AQI: 112 (Dañina para grupos sensibles) | PM2.5: 40.1 µg/m³ | PM10: 195.0 µg/m³ | NO₂: 102.3 ppb
+[14:32:01] Station: EST-002-RESIDENCIAL | AQI: 47 (Buena) | PM2.5: 9.3 µg/m³ | PM10: 28.1 µg/m³ | NO₂: 14.2 ppb
+[14:32:01] Station: EST-001-INDUSTRIAL  | AQI: 112 (Dañina para grupos sensibles) | PM2.5: 40.1 µg/m³ | PM10: 195.0 µg/m³ | NO₂: 48.5 ppb
+[14:32:01] Station: EST-003-AUTOPISTA   | AQI: 139 (Dañina para grupos sensibles) | PM2.5: 22.7 µg/m³ | PM10: 91.4 µg/m³ | NO₂: 303.8 ppb
 ```
 
 Cada línea representa una "hora" de simulación para cada estación. Los campos son:
@@ -82,7 +82,7 @@ Cada línea representa una "hora" de simulación para cada estación. Los campos
 | Campo | Descripción |
 |---|---|
 | `[HH:MM:SS]` | Hora real del sistema al momento de la lectura |
-| `Station` | Identificador de la estación (EST-001 a EST-005) |
+| `Station` | Identificador de la estación (EST-001 a EST-003, una por zona) |
 | `AQI` | Índice calculado (el peor contaminante marca el valor) |
 | `(Categoría)` | Nombre de la categoría en español |
 | `PM2.5: X µg/m³` | Concentración medida de partículas finas |
@@ -93,7 +93,7 @@ Cada línea representa una "hora" de simulación para cada estación. Los campos
 
 ```
 🚨 ALERTA URGENTE 🚨
-Estación: EST-004-ESTE | AQI: 174 | Categoría: Dañina
+Estación: EST-003-AUTOPISTA | AQI: 174 | Categoría: Dañina
 Acciones de mitigación:
   - Restringir tráfico vehicular
   - Limitar actividades al aire libre
@@ -117,11 +117,9 @@ Las alertas aparecen en `stderr` (la salida de error del proceso), que en la may
   ──────────────────────────────────────────────────────────────────────────────────
   Estación             │  AQI │ Categoría                       │ Contaminante dominante
   ──────────────────────────────────────────────────────────────────────────────────
-  EST-001-CENTRO       │   47 │ Buena                           │ PM10: 28.1 µg/m³
-  EST-002-NORTE        │   83 │ Moderada                        │ NO₂: 77.4 ppb
-  EST-003-SUR          │  112 │ Dañina para grupos sensibles    │ PM2.5: 40.1 µg/m³
-  EST-004-ESTE         │   35 │ Buena                           │ PM10: 18.2 µg/m³
-  EST-005-OESTE        │   65 │ Moderada                        │ NO₂: 58.3 ppb
+  EST-001-INDUSTRIAL   │  112 │ Dañina para grupos sensibles    │ PM2.5: 40.1 µg/m³
+  EST-002-RESIDENCIAL  │   47 │ Buena                           │ PM10: 28.1 µg/m³
+  EST-003-AUTOPISTA    │  139 │ Dañina para grupos sensibles    │ NO₂: 303.8 ppb
   ──────────────────────────────────────────────────────────────────────────────────
   AQI GLOBAL (ciudad)  │  112 │ Dañina para grupos sensibles    │
   ──────────────────────────────────────────────────────────────────────────────────
@@ -158,17 +156,19 @@ Esto permite observar el comportamiento de la red de estaciones a lo largo de "d
 
 ---
 
-## Las 5 Estaciones de Monitoreo
+## Las 3 Zonas de Monitoreo
 
-| ID | Ubicación |
-|---|---|
-| EST-001-CENTRO | Zona central de la ciudad |
-| EST-002-NORTE | Zona norte |
-| EST-003-SUR | Zona sur |
-| EST-004-ESTE | Zona este |
-| EST-005-OESTE | Zona oeste |
+La ciudad simulada se divide en **3 zonas**, cada una con un perfil de emisión
+distinto (ver `ZoneProfile.java`). Así la entrada del sistema no es homogénea:
+cada zona contamina de forma diferente.
 
-Cada estación corre en su **propio Virtual Thread** (hilo ligero de Java). Esto significa que las 5 estaciones funcionan en paralelo: cada una genera sus propias lecturas de forma independiente, como lo harían en la realidad sensores físicos distintos comunicándose por red.
+| ID | Zona | Contaminante dominante |
+|---|---|---|
+| EST-001-INDUSTRIAL | 🏭 Zona Industrial | PM2.5 / PM10 (combustión, manufactura) |
+| EST-002-RESIDENCIAL | 🏘️ Zona Residencial | Bajo (tráfico ligero, calefacción) |
+| EST-003-AUTOPISTA | 🛣️ Corredor de Autopistas | NO₂ (tráfico vehicular intenso) |
+
+Cada estación corre en su **propio Virtual Thread** (hilo ligero de Java). Esto significa que las 3 estaciones funcionan en paralelo: cada una genera sus propias lecturas de forma independiente, como lo harían en la realidad sensores físicos distintos comunicándose por red.
 
 ---
 
@@ -180,13 +180,15 @@ Los valores de concentración no son completamente aleatorios: siguen una **dist
 Valor simulado = Base + (varianza × número_gaussiano_aleatorio)
 ```
 
-| Contaminante | Valor base | Desviación estándar | Qué significa |
-|---|---|---|---|
-| PM2.5 | 15.0 µg/m³ | 25.0 | La mayoría de lecturas rondan 15 µg/m³ (Buena), pero picos ocasionales pueden superar 55 µg/m³ (Dañino) |
-| PM10 | 40.0 µg/m³ | 60.0 | Base en zona Buena, picos posibles en zona Dañina |
-| NO₂ | 30.0 ppb | 80.0 | Base en zona Buena, picos posibles en zona Dañina |
+El valor base y la desviación estándar **dependen de la zona** (`ZoneProfile.java`):
 
-Los picos representan eventos episódicos: hora pico de tráfico, incendio industrial, quema de campos, etc. Esto hace que el sistema **sí dispare alertas** durante la simulación, permitiendo ver el bucle de retroalimentación en acción.
+| Zona | PM2.5 (base / σ) | PM10 (base / σ) | NO₂ (base / σ) |
+|---|---|---|---|
+| 🏭 Industrial | 38.0 / 18.0 | 120.0 / 60.0 | 50.0 / 40.0 |
+| 🏘️ Residencial | 8.0 / 6.0 | 20.0 / 15.0 | 12.0 / 10.0 |
+| 🛣️ Autopistas | 22.0 / 12.0 | 60.0 / 30.0 | 200.0 / 120.0 |
+
+Así, la zona industrial dispara alertas sobre todo por **partículas**, el corredor de autopistas por **NO₂**, y la zona residencial se mantiene en su mayoría en categorías Buena/Moderada. Los picos representan eventos episódicos: hora pico de tráfico, incendio industrial, quema de campos, etc. Esto hace que el sistema **sí dispare alertas** durante la simulación, permitiendo ver el bucle de retroalimentación en acción.
 
 ---
 

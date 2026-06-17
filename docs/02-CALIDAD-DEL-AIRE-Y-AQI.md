@@ -156,5 +156,5 @@ AQI_global = max(AQI_PM2.5, AQI_PM10, AQI_NO2)
 Y el **AQI de la ciudad** es el máximo entre todas las estaciones activas:
 
 ```
-AQI_ciudad = max(AQI_EST-001, AQI_EST-002, AQI_EST-003, AQI_EST-004, AQI_EST-005)
+AQI_ciudad = max(AQI_INDUSTRIAL, AQI_RESIDENCIAL, AQI_AUTOPISTA)
 ```

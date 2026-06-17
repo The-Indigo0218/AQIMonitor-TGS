@@ -10,21 +10,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class SensorStation implements Runnable {
     private final String stationId;
+    private final ZoneProfile zone;
     private final ReadingCollector collector;
     private final Random random = new Random();
     private final AtomicBoolean running = new AtomicBoolean(true);
 
-    private static final double PM25_BASE = 15.0;
-    private static final double PM10_BASE = 40.0;
-    private static final double NO2_BASE = 30.0;
-
-    private static final double PM25_VARIANCE = 25.0;
-    private static final double PM10_VARIANCE = 60.0;
-    private static final double NO2_VARIANCE = 80.0;
-
-    public SensorStation(String stationId, ReadingCollector collector) {
+    public SensorStation(String stationId, ZoneProfile zone, ReadingCollector collector) {
         this.stationId = stationId;
+        this.zone = zone;
         this.collector = collector;
+    }
+
+    public String getStationId() {
+        return stationId;
+    }
+
+    public ZoneProfile getZone() {
+        return zone;
     }
 
     @Override
@@ -49,13 +51,11 @@ public final class SensorStation implements Runnable {
         var builder = SensorReading.builder(stationId)
             .timestamp(Instant.now());
 
-        double pm25 = Math.max(0, PM25_BASE + random.nextGaussian() * PM25_VARIANCE);
-        double pm10 = Math.max(0, PM10_BASE + random.nextGaussian() * PM10_VARIANCE);
-        double no2 = Math.max(0, NO2_BASE + random.nextGaussian() * NO2_VARIANCE);
-
-        builder.concentration(Pollutant.PM25, pm25)
-               .concentration(Pollutant.PM10, pm10)
-               .concentration(Pollutant.NO2, no2);
+        for (Pollutant pollutant : Pollutant.values()) {
+            double value = Math.max(0,
+                zone.base(pollutant) + random.nextGaussian() * zone.variance(pollutant));
+            builder.concentration(pollutant, value);
+        }
 
         return builder.build();
     }

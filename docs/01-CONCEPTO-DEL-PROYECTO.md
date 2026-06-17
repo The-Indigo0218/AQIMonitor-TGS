@@ -28,7 +28,7 @@ La Teoría General de Sistemas estudia cómo distintos componentes interactúan 
 | **Sistema abierto** | El sistema recibe entradas del entorno (lecturas de sensores) y produce salidas (alertas, registros) |
 | **Retroalimentación negativa** | Cuando el AQI supera 150, el sistema reacciona con acciones de mitigación para reducir el problema |
 | **Jerarquía de subsistemas** | Existe una capa de sensores, una capa de cálculo y una capa de decisión, cada una con su función |
-| **Emergencia** | El AQI global no viene de un solo sensor, sino del comportamiento colectivo de las cinco estaciones |
+| **Emergencia** | El AQI global no viene de un solo sensor, sino del comportamiento colectivo de las tres zonas |
 | **Homeostasis** | El objetivo del sistema es mantener la calidad del aire dentro de rangos aceptables |
 | **Entropía** | Sin el monitoreo, el conocimiento sobre el estado del aire sería desorganizado e inútil |
 
@@ -36,7 +36,7 @@ La Teoría General de Sistemas estudia cómo distintos componentes interactúan 
 
 ## ¿Cómo Funciona en Términos Simples?
 
-Imagina una ciudad con cinco estaciones de monitoreo ubicadas en distintos puntos (Centro, Norte, Sur, Este, Oeste). Cada estación tiene sensores que, cada hora, envían tres mediciones:
+Imagina una ciudad con tres estaciones de monitoreo, una por cada tipo de zona (industrial, residencial y un corredor de autopistas). Cada estación tiene sensores que, cada hora, envían tres mediciones:
 
 - Cuántas partículas finas flotan en el aire (PM2.5 y PM10)
 - Cuánto dióxido de nitrógeno hay (NO₂), un gas producido por motores y fábricas
